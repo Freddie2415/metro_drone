@@ -2,6 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 import 'metro_drone_platform_interface.dart';
+import 'models/subdivision.dart';
+import 'models/tick_type.dart';
 
 /// Реализация [MetroDronePlatform], использующая метод-каналы.
 class MethodChannelMetroDrone extends MetroDronePlatform {
@@ -51,5 +53,31 @@ class MethodChannelMetroDrone extends MetroDronePlatform {
       'numerator': numerator,
       'denominator': denominator,
     });
+  }
+
+  @override
+  Future<void> setSubdivision(Subdivision value) async {
+    await methodChannel.invokeMethod('setSubdivision', value.toMap());
+  }
+
+  @override
+  Future<void> setTickType({
+    required int tickIndex,
+    required TickType tickType,
+  }) async {
+    await methodChannel.invokeMethod('setTickType', {
+      "tickIndex": tickIndex,
+      "tickType": tickType.toStringValue(),
+    });
+  }
+
+  @override
+  Future<void> setNextTickType({required int tickIndex}) async {
+    await methodChannel.invokeMethod('setNextTickType', tickIndex);
+  }
+
+  @override
+  Future<void> initialize([dynamic data]) async {
+    await methodChannel.invokeMethod('initialize', data);
   }
 }

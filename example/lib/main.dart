@@ -2,6 +2,8 @@ import 'dart:collection';
 
 import 'package:flutter/material.dart';
 import 'package:metro_drone/metro_drone.dart';
+import 'package:metro_drone/models/subdivision.dart';
+import 'package:metro_drone/models/tick_type.dart';
 
 void main() {
   runApp(const MyApp());
@@ -16,17 +18,21 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   final _metroDrone = MetroDrone();
+  Subdivision? selectedSubdivision;
+  List<String> list = <String>['One', 'Two', 'Three', 'Four'];
+  String? selectValue;
   bool isPlaying = false;
   int sliderBmp = 120;
   int currentTick = 0;
+
   // time signature
   int numerator = 4;
   int denominator = 4;
 
-
   @override
   void initState() {
-    super.initState();
+    selectValue = list.first;
+    selectedSubdivision = _metroDrone.subdivisions.first;
     _metroDrone.listenToStateUpdates();
     _metroDrone.currentTickStream.listen((value) {
       currentTick = value;
@@ -36,6 +42,7 @@ class _MyAppState extends State<MyApp> {
       isPlaying = value;
       setState(() {});
     });
+    super.initState();
   }
 
   @override
@@ -58,50 +65,63 @@ class _MyAppState extends State<MyApp> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               StreamBuilder<int>(
+                  stream: _metroDrone.bpmStream,
+                  builder: (context, snapshot) {
+                    return Text(
+                      "BPM: ${snapshot.data ?? _metroDrone.bpm}",
+                      style: const TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    );
+                  }),
+              const SizedBox(height: 100),
+              StreamBuilder<List<TickType>>(
+                  stream: _metroDrone.tickTypesStream,
+                  builder: (context, snapshot) {
+                    return Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: List.generate(
+                        numerator,
+                        (index) {
+                          final tickTypes =
+                              snapshot.data ?? _metroDrone.tickTypes;
+                          final tickColor = tickTypes[index].color;
+                          final backgroundColor =
+                              currentTick == index && isPlaying
+                                  ? tickColor
+                                  : Colors.transparent;
+                          return GestureDetector(
+                            onTap: () {
+                              _metroDrone.setNextTickType(tickIndex: index);
+                            },
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 200),
+                              constraints: const BoxConstraints(maxHeight: 75),
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: backgroundColor,
+                                border: Border.all(color: tickColor, width: 2),
+                                borderRadius: BorderRadius.circular(50),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    );
+                  }),
+              StreamBuilder<int>(
                 stream: _metroDrone.bpmStream,
                 builder: (context, snapshot) {
-                  return Text(
-                    "BPM: ${snapshot.data ?? _metroDrone.bpm}",
-                    style: const TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w700,
-                    ),
+                  return Slider(
+                    value: snapshot.data?.toDouble() ?? 120,
+                    max: 400,
+                    min: 20,
+                    onChanged: (value) {
+                      _metroDrone.setBpm(value.toInt());
+                      setState(() {});
+                    },
                   );
-                }
-              ),
-              const SizedBox(height: 100),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: List.generate(
-                  numerator,
-                  (index) => GestureDetector(
-                    onTap: () {},
-                    child: Container(
-                      constraints: const BoxConstraints(maxHeight: 75),
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: currentTick == index ? Colors.green : null,
-                        border: Border.all(
-                          color:
-                              currentTick == index ? Colors.green : Colors.grey,
-                        ),
-                        borderRadius: BorderRadius.circular(50),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              Slider(
-                value: sliderBmp.toDouble(),
-                max: 240,
-                min: 40,
-                onChanged: (value) {
-                  sliderBmp = value.toInt();
-                  setState(() {});
-                },
-                onChangeEnd: (value) {
-                  print("Change End: ${value.toInt()}");
-                  _metroDrone.setBpm(value.toInt());
                 },
               ),
               const SizedBox(height: 100),
@@ -137,6 +157,18 @@ class _MyAppState extends State<MyApp> {
                   ),
                 ],
               ),
+              const Text("Subdivision:"),
+              DropDown<Subdivision>(
+                selectedValue: selectedSubdivision,
+                values: _metroDrone.subdivisions,
+                onChanged: (value) {
+                  if (value != null) {
+                    _metroDrone.setSubdivision(value);
+                    selectedSubdivision = value;
+                    setState(() {});
+                  }
+                },
+              ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -163,6 +195,35 @@ class _MyAppState extends State<MyApp> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class DropDown<T> extends StatelessWidget {
+  final T? selectedValue;
+  final List<T> values;
+  final ValueChanged<T?> onChanged;
+
+  const DropDown({
+    super.key,
+    required this.selectedValue,
+    required this.values,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return DropdownButton<T>(
+      value: selectedValue,
+      items: values
+          .map(
+            (value) => DropdownMenuItem<T>(
+              value: value,
+              child: Text(value.toString()),
+            ),
+          )
+          .toList(),
+      onChanged: onChanged,
     );
   }
 }
@@ -198,6 +259,16 @@ class SelectWidget extends StatelessWidget {
       },
       dropdownMenuEntries: menuEntries,
     );
-    ;
+  }
+}
+
+extension TickTypeColor on TickType {
+  Color get color {
+    return switch (this) {
+      TickType.silence => Colors.grey,
+      TickType.regular => Colors.blue,
+      TickType.accent => Colors.orange,
+      TickType.strongAccent => Colors.red,
+    };
   }
 }

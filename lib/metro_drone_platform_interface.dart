@@ -1,6 +1,8 @@
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 import 'metro_drone_method_channel.dart';
+import 'models/subdivision.dart';
+import 'models/tick_type.dart';
 
 abstract class MetroDronePlatform extends PlatformInterface {
   /// Конструктор [MetroDronePlatform].
@@ -46,5 +48,24 @@ abstract class MetroDronePlatform extends PlatformInterface {
     required int denominator,
   }) async {
     throw UnimplementedError('setTimeSignature has not been implemented.');
+  }
+
+  Future<void> setSubdivision(Subdivision value) {
+    throw UnimplementedError('setSubdivision has not been implemented.');
+  }
+
+  Future<void> setTickType({
+    required int tickIndex,
+    required TickType tickType,
+  }) {
+    throw UnimplementedError('setTickType has not been implemented.');
+  }
+
+  Future<void> setNextTickType({required int tickIndex}) {
+    throw UnimplementedError('setNextTickType has not been implemented.');
+  }
+
+  Future<void> initialize([dynamic data]) async {
+    throw UnimplementedError('initialize has not been implemented.');
   }
 }
