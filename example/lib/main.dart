@@ -34,8 +34,18 @@ class _MyAppState extends State<MyApp> {
     selectValue = list.first;
     selectedSubdivision = _metroDrone.subdivisions.first;
     _metroDrone.listenToStateUpdates();
+    _metroDrone.stateStream.listen((event) {
+      final subdivisionMap = event['subdivision'].cast<String, dynamic>();
+      final subdivision = Subdivision.fromMap(subdivisionMap);
+      print("SUBDIVISION: $subdivision");
+    });
     _metroDrone.currentTickStream.listen((value) {
       currentTick = value;
+      setState(() {});
+    });
+    _metroDrone.subdivisionStream.listen((value) {
+      print("Subdivision Changed: $value");
+      selectedSubdivision = value;
       setState(() {});
     });
     _metroDrone.isPlayingStream.listen((value) {
@@ -164,8 +174,6 @@ class _MyAppState extends State<MyApp> {
                 onChanged: (value) {
                   if (value != null) {
                     _metroDrone.setSubdivision(value);
-                    selectedSubdivision = value;
-                    setState(() {});
                   }
                 },
               ),

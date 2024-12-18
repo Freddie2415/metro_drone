@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:flutter/cupertino.dart';
+
 import 'metro_drone_platform_interface.dart';
 import 'models/subdivision.dart';
 import 'models/tick_type.dart';
@@ -227,15 +229,13 @@ class MetroDrone {
 
       if (event.containsKey("subdivision")) {
         final subdivisionMap = event['subdivision'].cast<String, dynamic>();
-        if (subdivisionMap is Map<String, dynamic>) {
-          final newSubdivision = Subdivision.fromMap(subdivisionMap);
-          if (_subdivision.name != newSubdivision.name &&
-              _subdivision.description == newSubdivision.description &&
-              _subdivision.restPattern == newSubdivision.restPattern &&
-              _subdivision.durationPattern == newSubdivision.durationPattern) {
-            _subdivision = newSubdivision;
-            _subdivisionController.add(_subdivision);
-          }
+        final newSubdivision = Subdivision.fromMap(subdivisionMap);
+        if (_subdivision.name != newSubdivision.name &&
+            _subdivision.description != newSubdivision.description &&
+            _subdivision.restPattern != newSubdivision.restPattern &&
+            _subdivision.durationPattern != newSubdivision.durationPattern) {
+          _subdivision = newSubdivision;
+          _subdivisionController.add(_subdivision);
         }
       }
 
@@ -245,7 +245,7 @@ class MetroDrone {
         _tickTypes = TickType.fromList(tickTypesString);
         _tickTypesController.add(_tickTypes);
       }
-      print("onStateChanged: $event");
+      debugPrint("onStateChanged: $event");
     });
     getCurrentState();
   }

@@ -1,3 +1,5 @@
+import 'package:collection/collection.dart';
+
 class Subdivision {
   final String name;
   final String description;
@@ -31,6 +33,25 @@ class Subdivision {
           .map((e) => double.parse(e.toString()))
           .toList(),
     );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+
+    return other is Subdivision &&
+        other.name == name &&
+        other.description == description &&
+        const ListEquality().equals(other.restPattern, restPattern) &&
+        const ListEquality().equals(other.durationPattern, durationPattern);
+  }
+
+  @override
+  int get hashCode {
+    return name.hashCode ^
+        description.hashCode ^
+        const ListEquality().hash(restPattern) ^
+        const ListEquality().hash(durationPattern);
   }
 
   @override
