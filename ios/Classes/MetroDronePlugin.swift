@@ -48,6 +48,8 @@ public class MetroDronePlugin: NSObject, FlutterPlugin {
             }else {
                 result(FlutterError(code: "INVALID_ARGUMENTS", message: "initialize value missing", details: nil))
             }
+        case "getCurrentState":
+            self.sendEvent()
         case "start":
             metronome.start()
             result("Metronome started")

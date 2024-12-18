@@ -69,6 +69,12 @@ class MockMetroDronePlatform
     // TODO: implement initialize
     throw UnimplementedError();
   }
+
+  @override
+  Future<void> getCurrentState() {
+    // TODO: implement getCurrentState
+    throw UnimplementedError();
+  }
 }
 
 void main() {

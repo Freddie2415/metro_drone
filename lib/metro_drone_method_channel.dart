@@ -80,4 +80,9 @@ class MethodChannelMetroDrone extends MetroDronePlatform {
   Future<void> initialize([dynamic data]) async {
     await methodChannel.invokeMethod('initialize', data);
   }
+
+  @override
+  Future<void> getCurrentState() async {
+    await methodChannel.invokeMethod('getCurrentState');
+  }
 }

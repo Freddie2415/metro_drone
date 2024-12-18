@@ -302,4 +302,8 @@ class MetroDrone {
     };
     await MetroDronePlatform.instance.initialize(initData);
   }
+
+  Future<void> getCurrentState() async {
+    await MetroDronePlatform.instance.getCurrentState();
+  }
 }

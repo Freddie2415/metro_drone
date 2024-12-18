@@ -68,4 +68,8 @@ abstract class MetroDronePlatform extends PlatformInterface {
   Future<void> initialize([dynamic data]) async {
     throw UnimplementedError('initialize has not been implemented.');
   }
+
+  Future<void> getCurrentState() async {
+    throw UnimplementedError('getCurrentState has not been implemented.');
+  }
 }
