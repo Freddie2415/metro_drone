@@ -113,7 +113,16 @@ class MetroDrone {
 
   final StreamController<int> _bpmController = StreamController.broadcast();
 
+  final StreamController<int> _timeSignatureNumeratorController =
+      StreamController.broadcast();
+
+  final StreamController<int> _timeSignatureDenominatorController =
+      StreamController.broadcast();
+
   final StreamController<int> _currentTickController =
+      StreamController.broadcast();
+
+  final StreamController<int> _currentSubdivisionTickController =
       StreamController.broadcast();
 
   final StreamController<Subdivision> _subdivisionController =
@@ -152,8 +161,17 @@ class MetroDrone {
   /// Поток bpm.
   Stream<int> get bpmStream => _bpmController.stream;
 
+  Stream<int> get timeSignatureNumeratorStream =>
+      _timeSignatureNumeratorController.stream;
+
+  Stream<int> get timeSignatureDenominatorStream =>
+      _timeSignatureDenominatorController.stream;
+
   /// Поток currentTick.
   Stream<int> get currentTickStream => _currentTickController.stream;
+
+  Stream<int> get currentSubdivisionTickStream =>
+      _currentSubdivisionTickController.stream;
 
   Stream<Subdivision> get subdivisionStream => _subdivisionController.stream;
 
@@ -220,12 +238,27 @@ class MetroDrone {
         _currentTickController.add(_currentTick);
       }
 
-      _currentSubdivisionTick =
-          event['currentSubdivisionTick'] ?? _currentSubdivisionTick;
-      _timeSignatureNumerator =
-          event['timeSignatureNumerator'] ?? _timeSignatureNumerator;
-      _timeSignatureDenominator =
-          event['timeSignatureDenominator'] ?? _timeSignatureDenominator;
+      final newCurrentSubdivisionTick =
+          event['currentSubdivisionTick'] as int? ?? _currentSubdivisionTick;
+      if (_currentSubdivisionTick != newCurrentSubdivisionTick) {
+        _currentSubdivisionTick = newCurrentSubdivisionTick;
+        _currentSubdivisionTickController.add(newCurrentSubdivisionTick);
+      }
+
+      final newTimeSignatureNumerator =
+          event['timeSignatureNumerator'] as int? ?? _timeSignatureNumerator;
+      if (_timeSignatureNumerator != newTimeSignatureNumerator) {
+        _timeSignatureNumerator = newTimeSignatureNumerator;
+        _timeSignatureNumeratorController.add(newTimeSignatureNumerator);
+      }
+
+      final newTimeSignatureDenominator =
+          event['timeSignatureDenominator'] as int? ??
+              _timeSignatureDenominator;
+      if (_timeSignatureDenominator != newTimeSignatureDenominator) {
+        _timeSignatureDenominator = newTimeSignatureDenominator;
+        _timeSignatureDenominatorController.add(newTimeSignatureDenominator);
+      }
 
       if (event.containsKey("subdivision")) {
         final subdivisionMap = event['subdivision'].cast<String, dynamic>();
@@ -245,6 +278,7 @@ class MetroDrone {
         _tickTypes = TickType.fromList(tickTypesString);
         _tickTypesController.add(_tickTypes);
       }
+
       debugPrint("onStateChanged: $event");
     });
     getCurrentState();
