@@ -245,6 +245,7 @@ class MetroDrone {
       }
       print("onStateChanged: $event");
     });
+    getCurrentState();
   }
 
   Future<void> setSubdivision(Subdivision value) async {
