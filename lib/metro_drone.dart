@@ -120,6 +120,8 @@ class MetroDrone {
   final StreamController<List<TickType>> _tickTypesController =
       StreamController.broadcast();
 
+  StreamSubscription? _stateStreamSubscription;
+
   bool get isPlaying => _isPlaying;
 
   int get bpm => _bpm;
@@ -196,7 +198,8 @@ class MetroDrone {
 
   /// Подписка на поток для обновления локальных полей.
   void listenToStateUpdates() {
-    stateStream.listen((event) {
+    _stateStreamSubscription?.cancel();
+    _stateStreamSubscription = stateStream.listen((event) {
       final newIsPlaying = event['isPlaying'] as bool? ?? _isPlaying;
       if (_isPlaying != newIsPlaying) {
         _isPlaying = newIsPlaying;
@@ -268,6 +271,7 @@ class MetroDrone {
 
   /// Закрытие всех потоков при уничтожении объекта.
   void dispose() {
+    _stateStreamSubscription?.cancel();
     _isPlayingController.close();
     _bpmController.close();
     _currentTickController.close();
