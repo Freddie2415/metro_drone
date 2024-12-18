@@ -138,10 +138,6 @@ class MetroDrone {
 
   Subdivision get subdivision => _subdivision;
 
-  MetroDrone() {
-    initialize();
-  }
-
   /// Поток состояния.
   Stream<Map<String, dynamic>> get stateStream =>
       MetroDronePlatform.instance.stateStream;
