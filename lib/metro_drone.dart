@@ -226,10 +226,9 @@ class MetroDrone {
           event['timeSignatureDenominator'] ?? _timeSignatureDenominator;
 
       if (event.containsKey("subdivision")) {
-        if (event["subdivision"] is Map<String, dynamic>) {
-          final map = event["subdivision"] as Map<String, dynamic>;
-          final newSubdivision = Subdivision.fromMap(map);
-
+        final subdivisionMap = event['subdivision'].cast<String, dynamic>();
+        if (subdivisionMap is Map<String, dynamic>) {
+          final newSubdivision = Subdivision.fromMap(subdivisionMap);
           if (_subdivision.name != newSubdivision.name &&
               _subdivision.description == newSubdivision.description &&
               _subdivision.restPattern == newSubdivision.restPattern &&

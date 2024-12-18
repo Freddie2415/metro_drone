@@ -24,8 +24,12 @@ class Subdivision {
     return Subdivision(
       name: map['name'] as String,
       description: map['description'] as String,
-      restPattern: map['restPattern'] as List<bool>,
-      durationPattern: map['durationPattern'] as List<double>,
+      restPattern: (map['restPattern'] as List)
+          .map((e) => bool.parse(e.toString()))
+          .toList(),
+      durationPattern: (map['durationPattern'] as List)
+          .map((e) => double.parse(e.toString()))
+          .toList(),
     );
   }
 
