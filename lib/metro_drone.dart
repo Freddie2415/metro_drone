@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:flutter/cupertino.dart';
+import 'package:collection/collection.dart';
 
 import 'metro_drone_platform_interface.dart';
 import 'models/subdivision.dart';
@@ -132,6 +132,7 @@ class MetroDrone {
       StreamController.broadcast();
 
   StreamSubscription? _stateStreamSubscription;
+  StreamSubscription? _ticksStreamSubscription;
 
   bool get isPlaying => _isPlaying;
 
@@ -154,6 +155,10 @@ class MetroDrone {
   /// Поток состояния.
   Stream<Map<String, dynamic>> get stateStream =>
       MetroDronePlatform.instance.stateStream;
+
+  /// Поток тиков.
+  Stream<Map<String, int>> get ticksStream =>
+      MetroDronePlatform.instance.ticksStream;
 
   /// Поток isPlaying.
   Stream<bool> get isPlayingStream => _isPlayingController.stream;
@@ -230,19 +235,7 @@ class MetroDrone {
       if (_bpm != newBpm) {
         _bpm = newBpm;
         _bpmController.add(_bpm);
-      }
-
-      final newCurrentTick = event['currentTick'] as int? ?? _currentTick;
-      if (_currentTick != newCurrentTick) {
-        _currentTick = newCurrentTick;
-        _currentTickController.add(_currentTick);
-      }
-
-      final newCurrentSubdivisionTick =
-          event['currentSubdivisionTick'] as int? ?? _currentSubdivisionTick;
-      if (_currentSubdivisionTick != newCurrentSubdivisionTick) {
-        _currentSubdivisionTick = newCurrentSubdivisionTick;
-        _currentSubdivisionTickController.add(newCurrentSubdivisionTick);
+        print("BPM: $bpm");
       }
 
       final newTimeSignatureNumerator =
@@ -250,6 +243,7 @@ class MetroDrone {
       if (_timeSignatureNumerator != newTimeSignatureNumerator) {
         _timeSignatureNumerator = newTimeSignatureNumerator;
         _timeSignatureNumeratorController.add(newTimeSignatureNumerator);
+        print("TimeSignatureNumerator: $timeSignatureNumerator");
       }
 
       final newTimeSignatureDenominator =
@@ -258,6 +252,7 @@ class MetroDrone {
       if (_timeSignatureDenominator != newTimeSignatureDenominator) {
         _timeSignatureDenominator = newTimeSignatureDenominator;
         _timeSignatureDenominatorController.add(newTimeSignatureDenominator);
+        print("TimeSignatureNumerator: $timeSignatureDenominator");
       }
 
       if (event.containsKey("subdivision")) {
@@ -269,18 +264,35 @@ class MetroDrone {
             _subdivision.durationPattern != newSubdivision.durationPattern) {
           _subdivision = newSubdivision;
           _subdivisionController.add(_subdivision);
+          print("Subdivision: $subdivision");
         }
       }
 
       if (event.containsKey('tickTypes') && event['tickTypes'] is List) {
         final tickTypesString =
             (event['tickTypes'] as List).map((e) => e.toString()).toList();
-        _tickTypes = TickType.fromList(tickTypesString);
-        _tickTypesController.add(_tickTypes);
-      }
+        final newTickTypes = TickType.fromList(tickTypesString);
 
-      debugPrint("onStateChanged: $event");
+        if (!const ListEquality().equals(newTickTypes, _tickTypes)) {
+          _tickTypes = newTickTypes;
+          _tickTypesController.add(newTickTypes);
+          print("TickTypes: $tickTypes");
+        }
+      }
     });
+
+    _ticksStreamSubscription?.cancel();
+    _ticksStreamSubscription = ticksStream.listen((value) {
+      if (value.containsKey("currentTick") &&
+          value.containsKey("currentSubdivisionTick")) {
+        _currentTick = value["currentTick"] as int;
+        _currentSubdivisionTick = value["currentSubdivisionTick"] as int;
+        _currentTickController.add(_currentTick);
+        _currentSubdivisionTickController.add(_currentSubdivisionTick);
+        print("Tick: $currentTick SubdivisionTick: $currentSubdivisionTick");
+      }
+    });
+
     getCurrentState();
   }
 
@@ -305,6 +317,7 @@ class MetroDrone {
   /// Закрытие всех потоков при уничтожении объекта.
   void dispose() {
     _stateStreamSubscription?.cancel();
+    _ticksStreamSubscription?.cancel();
     _isPlayingController.close();
     _bpmController.close();
     _currentTickController.close();

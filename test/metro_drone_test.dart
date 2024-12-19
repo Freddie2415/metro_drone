@@ -75,6 +75,10 @@ class MockMetroDronePlatform
     // TODO: implement getCurrentState
     throw UnimplementedError();
   }
+
+  @override
+  // TODO: implement ticksStream
+  Stream<Map<String, int>> get ticksStream => throw UnimplementedError();
 }
 
 void main() {

@@ -35,6 +35,10 @@ abstract class MetroDronePlatform extends PlatformInterface {
     throw UnimplementedError('stateStream has not been implemented.');
   }
 
+  Stream<Map<String, int>> get ticksStream {
+    throw UnimplementedError('tickStream has not been implemented.');
+  }
+
   Future<void> tap() {
     throw UnimplementedError('tap has not been implemented.');
   }

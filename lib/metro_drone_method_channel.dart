@@ -11,17 +11,30 @@ class MethodChannelMetroDrone extends MetroDronePlatform {
   @visibleForTesting
   final methodChannel = const MethodChannel('metro_drone');
 
-  /// Канал для получения событий от нативной платформы.
-  final eventChannel = const EventChannel('metro_drone/events');
+  /// Канал для получения cостояние метронома от нативной платформы.
+  final stateEventChannel = const EventChannel('metro_drone/state');
+
+  /// Канал для получения тиков метронома от нативной платформы.
+  final ticksEventChannel = const EventChannel('metro_drone/ticks');
 
   Stream<Map<String, dynamic>>? _stateStream;
 
+  Stream<Map<String, int>>? _ticksStream;
+
   @override
   Stream<Map<String, dynamic>> get stateStream {
-    _stateStream ??= eventChannel.receiveBroadcastStream().map((event) {
+    _stateStream ??= stateEventChannel.receiveBroadcastStream().map((event) {
       return Map<String, dynamic>.from(event as Map);
     });
     return _stateStream!;
+  }
+
+  @override
+  Stream<Map<String, int>> get ticksStream {
+    _ticksStream ??= ticksEventChannel.receiveBroadcastStream().map((event) {
+      return Map<String, int>.from(event as Map);
+    });
+    return _ticksStream!;
   }
 
   @override

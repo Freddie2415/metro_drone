@@ -37,7 +37,6 @@ class _MyAppState extends State<MyApp> {
     _metroDrone.stateStream.listen((event) {
       final subdivisionMap = event['subdivision'].cast<String, dynamic>();
       final subdivision = Subdivision.fromMap(subdivisionMap);
-      print("SUBDIVISION: $subdivision");
     });
     _metroDrone.currentTickStream.listen((value) {
       currentTick = value;

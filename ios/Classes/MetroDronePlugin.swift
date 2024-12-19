@@ -3,20 +3,29 @@ import UIKit
 
 public class MetroDronePlugin: NSObject, FlutterPlugin {
     let metronome = Metronome()
-    private var eventSink: FlutterEventSink?
-    
-    override init() {
-        super.init()
-        metronome.delegate = self
-    }
     
     public static func register(with registrar: FlutterPluginRegistrar) {
-        let channel = FlutterMethodChannel(name: "metro_drone", binaryMessenger: registrar.messenger())
-        let eventChannel = FlutterEventChannel(name: "metro_drone/events", binaryMessenger: registrar.messenger())
-        
         let instance = MetroDronePlugin()
+
+        // Регистрация каналов
+        let channel = FlutterMethodChannel(name: "metro_drone", binaryMessenger: registrar.messenger())
+        let stateChannel = FlutterEventChannel(name: "metro_drone/state", binaryMessenger: registrar.messenger())
+        let tickChannel = FlutterEventChannel(name: "metro_drone/ticks", binaryMessenger: registrar.messenger())
+
+        // Создаём обработчики с одним инстансом метронома
+        let stateHandler = MetronomeStateHandler(metronome: instance.metronome)
+        let tickHandler = MetronomeTickHandler(metronome: instance.metronome)
+
+         // Устанавливаем делегаты
+        instance.metronome.stateDelegate = stateHandler
+        instance.metronome.tickDelegate = tickHandler
+
+        // Привязываем обработчики к каналам
+        stateChannel.setStreamHandler(stateHandler)
+        tickChannel.setStreamHandler(tickHandler)
+
+
         registrar.addMethodCallDelegate(instance, channel: channel)
-        eventChannel.setStreamHandler(instance)
     }
     
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
@@ -49,7 +58,7 @@ public class MetroDronePlugin: NSObject, FlutterPlugin {
                 result(FlutterError(code: "INVALID_ARGUMENTS", message: "initialize value missing", details: nil))
             }
         case "getCurrentState":
-            self.sendEvent()
+            metronome.stateDelegate?.sendState()
         case "start":
             metronome.start()
             result("Metronome started")
@@ -111,46 +120,5 @@ public class MetroDronePlugin: NSObject, FlutterPlugin {
         default:
             result(FlutterMethodNotImplemented)
         }
-    }
-}
-
-extension MetroDronePlugin: FlutterStreamHandler {
-    public func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
-        self.eventSink = events
-        sendEvent()
-        return nil
-    }
-    
-    public func onCancel(withArguments arguments: Any?) -> FlutterError? {
-        self.eventSink = nil
-        return nil
-    }
-}
-
-extension MetroDronePlugin: MetronomeDelegate {
-    func sendEvent() {
-        guard let eventSink = eventSink else {
-            print("EventSink is nil")
-            return
-        }
-        
-        let event: [String: Any] = [
-            "isPlaying": metronome.isPlaying,
-            "bpm": metronome.bpm,
-            "currentTick": metronome.currentTick,
-            "currentSubdivisionTick": metronome.currentSubdivisionTick,
-            "timeSignatureNumerator": metronome.timeSignatureNumerator,
-            "timeSignatureDenominator": metronome.timeSignatureDenominator,
-            "subdivision": [
-                "name": metronome.subdivision.name,
-                "description": metronome.subdivision.description,
-                "restPattern": metronome.subdivision.restPattern,
-                "durationPattern": metronome.subdivision.durationPattern,
-            ],
-            "tickTypes": metronome.tickTypes.map { $0.rawValue },
-        ]
-        
-        print("Sending event: \(event)") // Вывод данных в консоль
-        eventSink(event)
     }
 }

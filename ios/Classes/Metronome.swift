@@ -2,8 +2,12 @@ import Foundation
 import AVFoundation
 import SwiftUI
 
-protocol MetronomeDelegate: AnyObject {
-    func sendEvent()
+protocol MetronomeStateDelegate: AnyObject {
+    func sendState()
+}
+
+protocol MetronomeTickDelegate: AnyObject {
+    func sendTick()
 }
 
 class Metronome: ObservableObject {
@@ -14,17 +18,18 @@ class Metronome: ObservableObject {
     private var accentTickBuffer: AVAudioPCMBuffer?
     private var strongAccentTickBuffer: AVAudioPCMBuffer?
     
-    weak var delegate: MetronomeDelegate?
+    weak var stateDelegate: MetronomeStateDelegate?
+    weak var tickDelegate: MetronomeTickDelegate?
     
     var bpm: Int = 120 {
         didSet {
-            delegate?.sendEvent()
+            stateDelegate?.sendState()
         }
     }
     
     var isPlaying: Bool = false {
         didSet {
-            delegate?.sendEvent()
+            stateDelegate?.sendState()
         }
     }
     
@@ -50,13 +55,13 @@ class Metronome: ObservableObject {
                 stop()
                 start()
             }
-            delegate?.sendEvent()
+            stateDelegate?.sendState()
         }
     }
     
     var currentTick: Int = 0  {
         didSet {
-            delegate?.sendEvent()
+            stateDelegate?.sendState()
         }
     }
     
@@ -64,7 +69,7 @@ class Metronome: ObservableObject {
     
     var tickTypes: [TickType] = Array(repeating: .regular, count: 4) {
         didSet {
-            delegate?.sendEvent()
+            stateDelegate?.sendState()
         }
     }
     
@@ -75,7 +80,7 @@ class Metronome: ObservableObject {
         durationPattern: [1.0]
     ) {
         didSet {
-            delegate?.sendEvent()
+            stateDelegate?.sendState()
         }
     }
     
@@ -293,6 +298,8 @@ class Metronome: ObservableObject {
         print("TICK PLAYED | currentTick: \(self.currentTick) currentSubdivisionTick: $\(self.currentSubdivisionTick)")
         let pattern = subdivision
         DispatchQueue.main.async {
+            self.tickDelegate?.sendTick()
+
             if self.currentSubdivisionTick < pattern.durationPattern.count{
                 self.currentSubdivisionTick += 1
             }
