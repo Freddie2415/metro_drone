@@ -20,93 +20,13 @@ class MetroDrone {
     restPattern: [true],
     durationPattern: [1.0],
   );
-  final List<Subdivision> _subdivisions = [
-    Subdivision(
-        name: "Quarter Notes",
-        description: "One quarter note per beat",
-        restPattern: [true],
-        durationPattern: [1.0]),
-    Subdivision(
-        name: "Eighth Notes",
-        description: "Two eighth notes",
-        restPattern: [true, true],
-        durationPattern: [0.5, 0.5]),
-    Subdivision(
-        name: "Sixteenth Notes",
-        description: "Four equal sixteenth notes",
-        restPattern: [true, true, true, true],
-        durationPattern: [0.25, 0.25, 0.25, 0.25]),
-    Subdivision(
-        name: "Triplet",
-        description: "Three equal triplets",
-        restPattern: [true, true, true],
-        durationPattern: [0.33, 0.33, 0.33]),
-    Subdivision(
-        name: "Swing",
-        description: "Swing eighth notes (2/3 + 1/3)",
-        restPattern: [true, true],
-        durationPattern: [0.67, 0.33]),
-    Subdivision(
-        name: "Rest and Eighth Note",
-        description: "Rest followed by an eighth note",
-        restPattern: [false, true],
-        durationPattern: [0.5, 0.5]),
-    Subdivision(
-        name: "Dotted Eighth and Sixteenth",
-        description: "Dotted eighth and one sixteenth note",
-        restPattern: [true, true],
-        durationPattern: [0.75, 0.25]),
-    Subdivision(
-        name: "16th Note & Dotted Eighth",
-        description: "One sixteenth note and one dotted eighth",
-        restPattern: [true, true],
-        durationPattern: [0.25, 0.75]),
-    Subdivision(
-        name: "2 Sixteenth Notes & Eighth Note",
-        description: "Two sixteenth notes and one eighth note",
-        restPattern: [true, true, true],
-        durationPattern: [0.25, 0.25, 0.5]),
-    Subdivision(
-        name: "Eighth Note & 2 Sixteenth Notes",
-        description: "One eighth note and two sixteenth notes",
-        restPattern: [true, true, true],
-        durationPattern: [0.5, 0.25, 0.25]),
-    Subdivision(
-        name: "16th Rest and Notes",
-        description: "Alternating silence and sixteenth notes",
-        restPattern: [false, true, false, true],
-        durationPattern: [0.25, 0.25, 0.25, 0.25]),
-    Subdivision(
-        name: "16th Note, Eighth Note, 16th Note",
-        description: "Sixteenth, eighth, and sixteenth notes",
-        restPattern: [true, true, true],
-        durationPattern: [0.25, 0.5, 0.25]),
-    Subdivision(
-        name: "2 Triplets & Triplet Rest",
-        description: "Two triplets followed by a rest",
-        restPattern: [true, true, false],
-        durationPattern: [0.33, 0.33, 0.33]),
-    Subdivision(
-        name: "Triplet Rest & 2 Triplets",
-        description: "Rest for triplet and two triplet notes",
-        restPattern: [false, true, true],
-        durationPattern: [0.33, 0.33, 0.33]),
-    Subdivision(
-        name: "Triplet Rest, Triplet, Triplet Rest",
-        description: "Rest, triplet, and rest",
-        restPattern: [false, true, false],
-        durationPattern: [0.33, 0.33, 0.33]),
-    Subdivision(
-        name: "Quintuplets",
-        description: "Five equal notes in one beat",
-        restPattern: [true, true, true, true, true],
-        durationPattern: [0.2, 0.2, 0.2, 0.2, 0.2]),
-    Subdivision(
-        name: "Septuplets",
-        description: "Seven equal notes in one beat",
-        restPattern: [true, true, true, true, true, true, true],
-        durationPattern: [0.14, 0.14, 0.14, 0.14, 0.14, 0.14, 0.14])
-  ];
+  final Map<int, List<Subdivision>> _subdivisions = {
+    1: Subdivision.subdivisionsForWholeNote,
+    2: Subdivision.subdivisionsForHalfNote,
+    4: Subdivision.subdivisionsForQuarterNote,
+    8: Subdivision.subdivisionsForEighthNote,
+    16: Subdivision.subdivisionsForSixteenthNote,
+  };
 
   final StreamController<bool> _isPlayingController =
       StreamController.broadcast();
@@ -148,7 +68,7 @@ class MetroDrone {
 
   List<TickType> get tickTypes => _tickTypes;
 
-  List<Subdivision> get subdivisions => _subdivisions;
+  List<Subdivision> get subdivisions => _subdivisions[timeSignatureDenominator] ?? [];
 
   Subdivision get subdivision => _subdivision;
 
@@ -211,8 +131,8 @@ class MetroDrone {
       throw ArgumentError('Numerator must be between 1 and 16');
     }
 
-    if (![1, 2, 4, 8].contains(denominator)) {
-      throw ArgumentError('BPM must be in [1,2,4,8]');
+    if (![1, 2, 4, 8, 16].contains(denominator)) {
+      throw ArgumentError('BPM must be in [1,2,4,8, 16]');
     }
 
     await MetroDronePlatform.instance.setTimeSignature(
