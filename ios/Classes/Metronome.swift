@@ -74,10 +74,10 @@ class Metronome: ObservableObject {
     }
     
     var subdivision: Subdivision = Subdivision(
-        name: "Quarter Notes",
-        description: "One quarter note per beat",
-        restPattern: [true],
-        durationPattern: [1.0]
+          name: "Quarter Note",
+          description: "One quarter note spanning the entire duration",
+          restPattern: [true],
+          durationPattern: [1.0]
     ) {
         didSet {
             stateDelegate?.sendState()

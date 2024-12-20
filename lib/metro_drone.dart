@@ -14,12 +14,7 @@ class MetroDrone {
   int _currentTick = 0;
   int _currentSubdivisionTick = 0;
   List<TickType> _tickTypes = List.generate(4, (_) => TickType.regular);
-  Subdivision _subdivision = Subdivision(
-    name: "Quarter Notes",
-    description: "One quarter note per beat",
-    restPattern: [true],
-    durationPattern: [1.0],
-  );
+  late Subdivision _subdivision = subdivisions.first;
   final Map<int, List<Subdivision>> _subdivisions = {
     1: Subdivision.subdivisionsForWholeNote,
     2: Subdivision.subdivisionsForHalfNote,
@@ -68,7 +63,9 @@ class MetroDrone {
 
   List<TickType> get tickTypes => _tickTypes;
 
-  List<Subdivision> get subdivisions => _subdivisions[timeSignatureDenominator] ?? [];
+  List<Subdivision> get subdivisions =>
+      _subdivisions[timeSignatureDenominator] ??
+      Subdivision.subdivisionsForQuarterNote;
 
   Subdivision get subdivision => _subdivision;
 
