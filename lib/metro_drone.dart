@@ -167,7 +167,9 @@ class MetroDrone {
           event['timeSignatureDenominator'] as int? ??
               _timeSignatureDenominator;
       if (_timeSignatureDenominator != newTimeSignatureDenominator) {
+        int subdivisionIndex = subdivisions.indexOf(subdivision);
         _timeSignatureDenominator = newTimeSignatureDenominator;
+        _subdivision = subdivisions[subdivisionIndex];
         _timeSignatureDenominatorController.add(newTimeSignatureDenominator);
         print("TimeSignatureNumerator: $timeSignatureDenominator");
       }
